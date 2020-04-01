@@ -727,7 +727,7 @@ class SitemapGenerator
      * @throws BadMethodCallException
      * @throws RuntimeException
      */
-    public function updateRobots($path = ''): SitemapGenerator
+    public function updateRobots($path = '', $sitemapUrl=null): SitemapGenerator
     {
         if (count($this->sitemaps) === 0) {
             throw new BadMethodCallException("To update robots.txt, call createSitemap function first.");
@@ -735,7 +735,7 @@ class SitemapGenerator
 
         $robotsFilePath = ($path !== '') ? $path . $this->robotsFileName : $this->basePath . $this->robotsFileName;
 
-        $robotsFileContent = $this->createNewRobotsContentFromFile($robotsFilePath);
+        $robotsFileContent = $this->createNewRobotsContentFromFile($robotsFilePath, $sitemapUrl);
 
         if (false === $this->fs->file_put_contents($robotsFilePath, $robotsFileContent)) {
             throw new RuntimeException(
@@ -751,7 +751,7 @@ class SitemapGenerator
      * @param $filepath
      * @return string
      */
-    private function createNewRobotsContentFromFile($filepath): string
+    private function createNewRobotsContentFromFile($filepath, $sitemapUrl): string
     {
         if ($this->fs->file_exists($filepath)) {
             $robotsFileContent = "";
@@ -767,7 +767,7 @@ class SitemapGenerator
             $robotsFileContent = $this->getSampleRobotsContent();
         }
 
-        $robotsFileContent .= "Sitemap:" . $this->baseURL . '/' . $this->basePath . $this->sitemapFileName;
+        $robotsFileContent .= "Sitemap:" . $this->baseURL . '/' . (!empty($sitemapUrl)?$sitemapUrl:$this->basePath) . $this->sitemapFileName;
 
         return $robotsFileContent;
     }
