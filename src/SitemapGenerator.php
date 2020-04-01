@@ -734,7 +734,7 @@ class SitemapGenerator
         }
 
         $robotsFilePath = ($path !== '') ? $path . $this->robotsFileName : $this->basePath . $this->robotsFileName;
-        echo 'Write robots to ' .$robotsFilePath . '<br>';
+
         $robotsFileContent = $this->createNewRobotsContentFromFile($robotsFilePath);
 
         if (false === $this->fs->file_put_contents($robotsFilePath, $robotsFileContent)) {
