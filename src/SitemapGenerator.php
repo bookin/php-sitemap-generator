@@ -765,7 +765,7 @@ class SitemapGenerator
             $robotsFileContent = $this->getSampleRobotsContent();
         }
 
-        $robotsFileContent .= "Sitemap:" . $this->baseURL . '/' . (!empty($sitemapUrl)?$sitemapUrl:$this->basePath) . $this->sitemapFileName;
+        $robotsFileContent .= "Sitemap:" . $this->baseURL . '/' . (!empty($sitemapUrl)?$sitemapUrl:$this->basePath) . (count($this->sitemaps) > 1?$this->sitemapIndexFileName:$this->sitemapFileName);
 
         return $robotsFileContent;
     }
