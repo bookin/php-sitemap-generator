@@ -124,6 +124,12 @@ class SitemapGenerator
      * @access private
      */
     private $basePath;
+
+    /**
+     * @var string
+     */
+    private $webRootPath;
+
     /**
      * Version of this class
      * @var string
@@ -290,6 +296,17 @@ class SitemapGenerator
         $this->maxURLsPerSitemap = $value;
         return $this;
     }
+
+    /**
+     * @param string $webRootPath
+     */
+    public function setWebRootPath($webRootPath)
+    {
+        $this->webRootPath = $webRootPath;
+        return $this;
+    }
+
+
 
     /**
      * @return SitemapGenerator
@@ -476,15 +493,18 @@ class SitemapGenerator
                 );
             }
             for ($i = 0; $i < $sitemapsCount; $i++) {
+                $name = str_replace(".xml", ($i + 1) . ".xml", $this->sitemapFileName);
                 $this->sitemaps[$i] = [
-                    'filename' => str_replace(".xml", ($i + 1) . ".xml", $this->sitemapFileName),
+                    'filename' => $name,
+                    'filepath' => $this->basePath.$name,
+                    'fileurl' => str_replace($this->webRootPath, '', $this->basePath.$name),
                     'source' => $this->sitemaps[$i],
                 ];
             }
             $sitemapXml = new SimpleXMLElement($sitemapIndexHeader);
             foreach ($this->sitemaps as $sitemap) {
                 $row = $sitemapXml->addChild('sitemap');
-                $row->addChild(self::ATTR_NAME_LOC, $this->baseURL . "/" . $this->appendGzPostfixIfEnabled(htmlentities($sitemap['filename'])));
+                $row->addChild(self::ATTR_NAME_LOC, $this->baseURL . "/" . $this->appendGzPostfixIfEnabled(htmlentities($sitemap['fileurl'])));
                 $row->addChild(self::ATTR_NAME_LASTMOD, date('c'));
             }
             $this->sitemapFullURL = $this->baseURL . "/" . $this->appendGzPostfixIfEnabled($this->sitemapIndexFileName);
@@ -725,7 +745,7 @@ class SitemapGenerator
      * @throws BadMethodCallException
      * @throws RuntimeException
      */
-    public function updateRobots($path = '', $sitemapUrl=null): SitemapGenerator
+    public function updateRobots($path = ''): SitemapGenerator
     {
         if (count($this->sitemaps) === 0) {
             throw new BadMethodCallException("To update robots.txt, call createSitemap function first.");
@@ -733,7 +753,7 @@ class SitemapGenerator
 
         $robotsFilePath = ($path !== '') ? $path . $this->robotsFileName : $this->basePath . $this->robotsFileName;
 
-        $robotsFileContent = $this->createNewRobotsContentFromFile($robotsFilePath, $sitemapUrl);
+        $robotsFileContent = $this->createNewRobotsContentFromFile($robotsFilePath);
 
         if (false === $this->fs->file_put_contents($robotsFilePath, $robotsFileContent)) {
             throw new RuntimeException(
@@ -749,7 +769,7 @@ class SitemapGenerator
      * @param $filepath
      * @return string
      */
-    private function createNewRobotsContentFromFile($filepath, $sitemapUrl): string
+    private function createNewRobotsContentFromFile($filepath): string
     {
         if ($this->fs->file_exists($filepath)) {
             $robotsFileContent = "";
@@ -765,7 +785,7 @@ class SitemapGenerator
             $robotsFileContent = $this->getSampleRobotsContent();
         }
 
-        $robotsFileContent .= "Sitemap:" . $this->baseURL . '/' . (!empty($sitemapUrl)?$sitemapUrl:$this->basePath) . (count($this->sitemaps) > 1?$this->sitemapIndexFileName:$this->sitemapFileName);
+        $robotsFileContent .= "Sitemap:" . $this->baseURL . '/' . (str_replace($this->webRootPath, '', $this->basePath)) . (count($this->sitemaps) > 1?$this->sitemapIndexFileName:$this->sitemapFileName);
 
         return $robotsFileContent;
     }
