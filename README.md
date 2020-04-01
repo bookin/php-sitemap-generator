@@ -21,13 +21,15 @@ Usage example:
 
 include "src/SitemapGenerator.php";
 
-// Setting the current working directory to be output directory
-// for generated sitemaps (and, if needed, robots.txt)
-// The output directory setting is optional and provided for demonstration purpose.
-// By default output is written to current directory. 
-$outputDir = getcwd();
+// Setting the document root and the output path relative to it
+// robots.txt will always be created at the document root (if needed)
+// sitemaps are saved in the output directory
+// by default all files are written to the path defined as $rootPath
+$rootPath = $_SERVER['DOCUMENT_ROOT'];
+// relative path
+$outputDir = '';
 
-$generator = new \Icamys\SitemapGenerator\SitemapGenerator('example.com', $outputDir);
+$generator = new \Icamys\SitemapGenerator\SitemapGenerator('https://www.example.com', $outputDir);
 
 // will create also compressed (gzipped) sitemap
 $generator->toggleGZipFileCreation();
@@ -51,7 +53,7 @@ $alternates = [
 ];
 
 // adding url `loc`, `lastmodified`, `changefreq`, `priority`, `alternates`
-$generator->addURL('http://example.com/url/path/', new DateTime(), 'always', 0.5, $alternates);
+$generator->addURL('/url/path/', new DateTime(), 'always', 0.5, $alternates);
 
 // generate internally a sitemap
 $generator->createSitemap();
@@ -60,10 +62,11 @@ $generator->createSitemap();
 $generator->writeSitemap();
 
 // update robots.txt file in output directory or create a new one
-$generator->updateRobots();
+$generator->updateRobots($rootPath);
 
 // submit your sitemaps to Google, Yahoo, Bing and Ask.com
-$generator->submitSitemap();
+// optional: provide Yahoo AppID to avoid hitting limits when reporting sitemap to Yahoo
+$generator->submitSitemap($yahooAppID = '');
 ```
 
 ### Testing
